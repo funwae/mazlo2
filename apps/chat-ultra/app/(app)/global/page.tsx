@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { api } from "../../convex/_generated/api";
 import { ChatTimeline } from "@/components/room/ChatTimeline";
 import { Composer } from "@/components/room/Composer";
 import { MazloMemoryPanel } from "@/components/memory/MazloMemoryPanel";
