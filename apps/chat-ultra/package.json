@@ -13,7 +13,29 @@
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "convex": "^1.15.0"
+    "convex": "^1.15.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "@supabase/auth-helpers-nextjs": "^0.8.0",
+    "@supabase/ssr": "^0.5.0",
+    "zod": "^3.22.0",
+    "drizzle-orm": "^0.29.0",
+    "postgres": "^3.4.0",
+    "openai": "^4.20.0",
+    "resend": "^3.0.0",
+    "clsx": "^2.0.0",
+    "tailwind-merge": "^2.0.0",
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0",
+    "typescript": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/pg": "^8.10.0",
+    "eslint": "^8.55.0",
+    "eslint-config-next": "^15.0.0"
   }
 }
 
