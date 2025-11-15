@@ -9,6 +9,11 @@ const nextConfig = {
       ...config.resolve.alias,
       '@': path.resolve(__dirname, '.'),
     };
+    // Ensure TypeScript declaration files are resolved
+    config.resolve.extensions = [
+      ...config.resolve.extensions,
+      '.d.ts',
+    ];
     return config;
   },
   images: {
