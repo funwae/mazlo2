@@ -1,0 +1,8 @@
+{
+  "buildCommand": "cd apps/chat-ultra && npm run build",
+  "devCommand": "cd apps/chat-ultra && npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "rootDirectory": "apps/chat-ultra"
+}
+
