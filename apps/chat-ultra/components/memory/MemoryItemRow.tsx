@@ -3,7 +3,7 @@
 import { MemoryScopeTag } from "./MemoryScopeTag";
 import { MemoryImportanceBadge } from "./MemoryImportanceBadge";
 import { Button } from "@/components/ui/Button";
-import type { Doc } from "../../convex/_generated/dataModel";
+import type { Doc } from "../../../convex/_generated/dataModel";
 
 interface MemoryItemRowProps {
   memory: Doc<"memories">;
