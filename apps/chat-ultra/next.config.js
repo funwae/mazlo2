@@ -3,7 +3,8 @@ const path = require('path');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
+  // Remove 'standalone' output for Vercel deployment
+  // output: 'standalone',
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
@@ -61,7 +62,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self' https://api.openai.com https://*.supabase.co https://api.z.ai",
+              "connect-src 'self' https://api.openai.com https://*.supabase.co https://api.z.ai https://*.convex.cloud",
             ].join('; '),
           },
         ],

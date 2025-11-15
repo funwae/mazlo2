@@ -14,13 +14,13 @@ When creating your Vercel project, set these **exactly** as shown:
    - Should auto-detect, but verify it's set
 
 3. **Build Command:** Leave empty (uses `npm run build` from package.json)
-   - The `vercel.json` handles this
+   - The `vercel.json` handles the build command: `cd apps/chat-ultra && npm run build`
 
-4. **Output Directory:** `.next`
-   - Should auto-detect
+4. **Output Directory:** Leave empty (auto-detected)
+   - The `vercel.json` specifies: `apps/chat-ultra/.next`
 
-5. **Install Command:** Leave empty (uses `npm install` from root)
-   - The `vercel.json` handles this
+5. **Install Command:** Leave empty (uses default)
+   - The `vercel.json` handles the install: `npm install --legacy-peer-deps`
 
 ### Why This Setup Works
 

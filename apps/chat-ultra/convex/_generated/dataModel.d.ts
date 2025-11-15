@@ -1,8 +1,6 @@
-/* prettier-ignore-start */
-
 /* eslint-disable */
 /**
- * Generated `_dataModel` utility.
+ * Generated data model types.
  *
  * THIS CODE IS AUTOMATICALLY GENERATED.
  *
@@ -10,47 +8,53 @@
  * @module
  */
 
-import type { DataModelFromSchemaDefinition } from "convex/server";
-import type { DocumentByName, TableNamesInDataModel } from "convex/server";
+import type {
+  DataModelFromSchemaDefinition,
+  DocumentByName,
+  TableNamesInDataModel,
+  SystemTableNames,
+} from "convex/server";
 import type { GenericId } from "convex/values";
-import schema from "../schema";
+import schema from "../schema.js";
 
 /**
  * The names of all of your Convex tables.
  */
-export type TableNames = TableNamesInDataModel<DataModelFromSchemaDefinition<typeof schema>>;
+export type TableNames = TableNamesInDataModel<DataModel>;
 
 /**
  * The type of a document stored in Convex.
+ *
+ * @typeParam TableName - A string literal type of the table name (like "users").
  */
 export type Doc<TableName extends TableNames> = DocumentByName<
-  DataModelFromSchemaDefinition<typeof schema>,
+  DataModel,
   TableName
 >;
 
 /**
- * The type of a document ID stored in Convex.
+ * An identifier for a document in Convex.
+ *
+ * Convex documents are uniquely identified by their `Id`, which is accessible
+ * on the `_id` field. To learn more, see [Document IDs](https://docs.convex.dev/using/document-ids).
+ *
+ * Documents can be loaded using `db.get(id)` in query and mutation functions.
+ *
+ * IDs are just strings at runtime, but this type can be used to distinguish them from other
+ * strings when type checking.
+ *
+ * @typeParam TableName - A string literal type of the table name (like "users").
  */
-export type Id<TableName extends TableNames> = GenericId<TableName>;
+export type Id<TableName extends TableNames | SystemTableNames> =
+  GenericId<TableName>;
 
 /**
  * A type describing your Convex data model.
  *
- * This type enables type autocompletion when querying your database by
- * table name. Pass this type in as a type parameter to the query builder
- * functions (like `.query()`, `.get()`, etc.) to enable type inference.
+ * This type includes information about what tables you have, the type of
+ * documents stored in those tables, and the indexes defined on them.
  *
- * @example
- * ```ts
- * export const myQuery = query({
- *   handler: async (ctx) => {
- *     const doc = await ctx.db.get<DataModel>("myTable", id);
- *     //    ^? doc: Doc<"myTable"> | null
- *   },
- * });
- * ```
+ * This type is used to parameterize methods like `queryGeneric` and
+ * `mutationGeneric` to make them type-safe.
  */
 export type DataModel = DataModelFromSchemaDefinition<typeof schema>;
-
-/* prettier-ignore-end */
-
