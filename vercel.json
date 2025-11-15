@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd apps/chat-ultra && npx next build",
-  "devCommand": "cd apps/chat-ultra && npx next dev",
-  "installCommand": "npm install",
-  "outputDirectory": "apps/chat-ultra/.next"
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "cd ../.. && npm install --legacy-peer-deps",
+  "outputDirectory": ".next"
 }
