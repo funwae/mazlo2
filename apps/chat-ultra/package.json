@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "cd ../.. && npx convex codegen --path apps/chat-ultra 2>/dev/null || true && cd apps/chat-ultra && next build",
+    "build": "cd ../.. && (npx convex codegen --path apps/chat-ultra 2>/dev/null || echo '⚠️  Convex codegen skipped - using committed generated files') && cd apps/chat-ultra && next build",
     "start": "next start",
     "lint": "next lint"
   },
