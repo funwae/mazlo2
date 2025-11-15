@@ -1,8 +1,8 @@
 {
-  "buildCommand": "cd apps/chat-ultra && npm run build",
-  "devCommand": "cd apps/chat-ultra && npm run dev",
-  "installCommand": "npm install",
+  "buildCommand": "npx next build",
+  "devCommand": "npx next dev",
+  "installCommand": "cd ../.. && npm install",
   "framework": "nextjs",
-  "rootDirectory": "apps/chat-ultra"
+  "rootDirectory": "apps/chat-ultra",
+  "outputDirectory": ".next"
 }
-
