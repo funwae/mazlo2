@@ -1,11 +1,11 @@
 "use client";
 
 import { useQuery, useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { MemoryItemRow } from "./MemoryItemRow";
 import { MemoryEditDialog } from "./MemoryEditDialog";
 import { useState } from "react";
-import type { Id } from "../../convex/_generated/dataModel";
+import type { Id } from "@/convex/_generated/dataModel";
 
 interface MemorySectionPinnedProps {
   roomId: string;

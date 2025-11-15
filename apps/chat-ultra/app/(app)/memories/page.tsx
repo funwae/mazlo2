@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { MemoryItemRow } from "@/components/memory/MemoryItemRow";
 import { useState } from "react";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";

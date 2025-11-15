@@ -1,10 +1,10 @@
 "use client";
 
 import { useQuery, useAction } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/Button";
 import { useState } from "react";
-import type { Id } from "../../convex/_generated/dataModel";
+import type { Id } from "@/convex/_generated/dataModel";
 
 interface MemorySectionSummariesProps {
   roomId: string;
