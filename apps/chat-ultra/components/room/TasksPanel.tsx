@@ -136,7 +136,10 @@ export function TasksPanel({ tasks, onTaskClick, onToggleStatus, onDeleteTask }:
             )}
           </div>
         </div>
-      ))}
+          ))}
+        </div>
+        )}
+      </div>
     </div>
   );
 }
