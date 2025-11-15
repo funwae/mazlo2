@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { api } from "../../../convex/_generated/api";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 interface ProviderConfig {
   _id: Id<"providerConfigs">;

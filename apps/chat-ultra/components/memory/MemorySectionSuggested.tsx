@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { api } from "../../convex/_generated/api";
 import { Button } from "@/components/ui/Button";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "../../convex/_generated/dataModel";
 
 interface MemorySectionSuggestedProps {
   roomId: string;
