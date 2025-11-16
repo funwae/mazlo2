@@ -1,15 +1,11 @@
 /**
  * Get current authenticated user from Supabase session
- * Returns the Convex user ID after syncing with Supabase user
+ * Returns the user ID after syncing with Supabase user
  */
 
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { ConvexHttpClient } from "convex/browser";
-import { api } from "@/convex/_generated/api";
 import { getOrCreateUser } from "../db/users";
-
-const convexClient = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function getCurrentUser(): Promise<{ id: string; email: string } | null> {
   try {
@@ -34,11 +30,11 @@ export async function getCurrentUser(): Promise<{ id: string; email: string } | 
       return null;
     }
 
-    // Get or create Convex user
-    const convexUser = await getOrCreateUser(supabaseUser.id, supabaseUser.email || "");
+    // Get or create user in database
+    const dbUser = await getOrCreateUser(supabaseUser.id, supabaseUser.email || "");
 
     return {
-      id: convexUser.id,
+      id: dbUser.id,
       email: supabaseUser.email || "",
     };
   } catch (error) {
@@ -48,7 +44,7 @@ export async function getCurrentUser(): Promise<{ id: string; email: string } | 
 }
 
 /**
- * Get current user ID (Convex ID) from Supabase session
+ * Get current user ID from Supabase session
  * Returns null if not authenticated
  */
 export async function getCurrentUserId(): Promise<string | null> {

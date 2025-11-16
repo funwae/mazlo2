@@ -1,45 +1,73 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
+
+interface Settings {
+  memoryEnabled: boolean;
+  showSuggestedMemories: boolean;
+}
 
 export default function MemorySettingsPage() {
   const { userId, isLoading: userLoading } = useCurrentUser();
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [memoryEnabled, setMemoryEnabled] = useState(true);
+  const [showSuggested, setShowSuggested] = useState(true);
 
-  const settings = useQuery(
-    api.settings.getForUser,
-    userId ? { ownerUserId: userId } : "skip"
-  );
+  useEffect(() => {
+    if (userId) {
+      fetchSettings();
+    }
+  }, [userId]);
 
-  const updateSettings = useMutation(api.settings.update);
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch('/api/settings');
+      if (res.ok) {
+        const data = await res.json();
+        setSettings(data.settings);
+        if (data.settings) {
+          setMemoryEnabled(data.settings.memoryEnabled ?? true);
+          setShowSuggested(data.settings.showSuggestedMemories ?? true);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const [memoryEnabled, setMemoryEnabled] = useState(
-    settings?.memoryEnabled ?? true
-  );
-  const [showSuggested, setShowSuggested] = useState(
-    settings?.showSuggestedMemories ?? true
-  );
+  const handleSave = async () => {
+    if (!userId) return;
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          memoryEnabled,
+          showSuggestedMemories: showSuggested,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSettings(data.settings);
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+    }
+  };
 
-  if (settings === undefined) {
+  if (loading || userLoading) {
     return (
       <div className="p-8 text-center">
         <p className="text-body text-text-secondary">加载中...</p>
       </div>
     );
   }
-
-  const handleSave = async () => {
-    if (!userId) return;
-    await updateSettings({
-      ownerUserId: userId,
-      memoryEnabled,
-      showSuggestedMemories: showSuggested,
-    });
-  };
 
   return (
     <div className="p-8 max-w-2xl mx-auto">

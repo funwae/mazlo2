@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { ConvexClientProvider } from './providers';
 
 export const metadata: Metadata = {
   title: 'Chat Ultra with Mazlo',
@@ -15,7 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ConvexClientProvider>{children}</ConvexClientProvider>
+        {children}
       </body>
     </html>
   );

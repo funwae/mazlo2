@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import type { Id } from "@/convex/_generated/dataModel";
+
+interface Memory {
+  _id: string;
+  content: string;
+  scope: string;
+  importance: number;
+}
 
 interface MemoryEditDialogProps {
-  memoryId: Id<"memories">;
+  memoryId: string;
   onClose: () => void;
 }
 
@@ -17,33 +21,50 @@ export function MemoryEditDialog({
   memoryId,
   onClose,
 }: MemoryEditDialogProps) {
-  const memory = useQuery(api.memory.listAllForUser, {
-    ownerUserId: "" as Id<"users">, // This needs to be fixed - should get from auth
-    limit: 1000,
-  });
+  const [currentMemory, setCurrentMemory] = useState<Memory | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [content, setContent] = useState("");
+  const [scope, setScope] = useState("room");
+  const [importance, setImportance] = useState(0.5);
 
-  const updateMemory = useMutation(api.memory.update);
+  useEffect(() => {
+    fetchMemory();
+  }, [memoryId]);
 
-  const currentMemory = memory?.find((m) => m._id === memoryId);
+  const fetchMemory = async () => {
+    try {
+      const res = await fetch(`/api/memories/${memoryId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentMemory(data.memory);
+        if (data.memory) {
+          setContent(data.memory.content || "");
+          setScope(data.memory.scope || "room");
+          setImportance(data.memory.importance || 0.5);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching memory:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const [content, setContent] = useState(currentMemory?.content || "");
-  const [scope, setScope] = useState(currentMemory?.scope || "room");
-  const [importance, setImportance] = useState(
-    currentMemory?.importance || 0.5
-  );
+  if (loading) {
+    return null;
+  }
 
   if (!currentMemory) {
     return null;
   }
 
   const handleSave = async () => {
-    await updateMemory({
-      memoryId,
-      content,
-      scope,
-      importance,
-    });
-    onClose();
+    try {
+      // TODO: Implement update memory via API
+      onClose();
+    } catch (error) {
+      console.error('Error saving memory:', error);
+    }
   };
 
   return (

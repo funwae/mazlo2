@@ -1,21 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
-import type { Id } from "@/convex/_generated/dataModel";
 
 interface ProviderConfig {
-  _id: Id<"providerConfigs">;
+  _id: string;
   provider: string;
   defaultModel: string;
   enabled: boolean;
   apiKeyRef?: string; // Reference to encrypted storage
+}
+
+interface Settings {
+  defaultProvider?: string;
 }
 
 export default function ProvidersPage() {
@@ -25,32 +26,47 @@ export default function ProvidersPage() {
   const [testing, setTesting] = useState<Record<string, boolean>>({});
   const [modelStates, setModelStates] = useState<Record<string, string>>({});
 
-  const providerConfigs = useQuery(
-    api.provider.listForUser,
-    userId ? { ownerUserId: userId } : "skip"
-  );
-
-  const settings = useQuery(
-    api.settings.getForUser,
-    userId ? { ownerUserId: userId } : "skip"
-  );
-
-  const updateProvider = useMutation(api.provider.setDefault);
-  const createProviderConfig = useMutation(api.provider.createConfig);
+  const [providerConfigs, setProviderConfigs] = useState<ProviderConfig[]>([]);
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (providerConfigs) {
-      // Initialize API keys from configs (in production, these would be decrypted)
-      const keys: Record<string, string> = {};
-      providerConfigs.forEach((config) => {
-        if (config.apiKeyRef) {
-          // In production, decrypt apiKeyRef
-          keys[config.provider] = ""; // Placeholder - would decrypt
-        }
-      });
-      setApiKeys(keys);
+    if (userId) {
+      fetchData();
     }
-  }, [providerConfigs]);
+  }, [userId]);
+
+  const fetchData = async () => {
+    try {
+      const [configsRes, settingsRes] = await Promise.all([
+        fetch('/api/providers'),
+        fetch('/api/settings'),
+      ]);
+
+      if (configsRes.ok) {
+        const configsData = await configsRes.json();
+        setProviderConfigs(configsData.configs || []);
+        // Initialize API keys from configs (in production, these would be decrypted)
+        const keys: Record<string, string> = {};
+        (configsData.configs || []).forEach((config: ProviderConfig) => {
+          if (config.apiKeyRef) {
+            // In production, decrypt apiKeyRef
+            keys[config.provider] = ""; // Placeholder - would decrypt
+          }
+        });
+        setApiKeys(keys);
+      }
+
+      if (settingsRes.ok) {
+        const settingsData = await settingsRes.json();
+        setSettings(settingsData.settings);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSaveProvider = async (providerName: string, apiKey: string, model: string) => {
     if (!userId) return;
@@ -61,24 +77,39 @@ export default function ProvidersPage() {
       // For now, we'll store a reference (apiKeyRef would be encrypted in production)
       const apiKeyRef = `encrypted_${providerName}_${Date.now()}`;
 
-      // Create or update provider config
-      await createProviderConfig({
-        ownerUserId: userId,
-        provider: providerName,
-        apiKeyRef,
-        defaultModel: model,
-        enabled: true,
+      // Create or update provider config via API
+      const res = await fetch('/api/providers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: providerName,
+          apiKeyRef,
+          defaultModel: model,
+          enabled: true,
+        }),
       });
+
+      if (!res.ok) {
+        throw new Error('Failed to save provider config');
+      }
 
       // Set as default if not already set
       if (!settings?.defaultProvider || settings.defaultProvider !== providerName) {
-        await updateProvider({
-          ownerUserId: userId,
-          provider: providerName,
-          model,
+        const settingsRes = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            defaultProvider: providerName,
+          }),
         });
+        if (settingsRes.ok) {
+          const settingsData = await settingsRes.json();
+          setSettings(settingsData.settings);
+        }
       }
 
+      // Refresh provider configs
+      await fetchData();
       setApiKeys((prev) => ({ ...prev, [providerName]: "" })); // Clear after save
     } catch (error) {
       console.error(`Failed to save ${providerName}:`, error);
@@ -135,7 +166,7 @@ export default function ProvidersPage() {
     },
   ];
 
-  if (userLoading || settings === undefined) {
+  if (userLoading || loading) {
     return (
       <div className="p-8 text-center">
         <p className="text-body text-text-secondary">加载中...</p>
@@ -232,11 +263,21 @@ export default function ProvidersPage() {
                       variant="secondary"
                       onClick={async () => {
                         if (!userId) return;
-                        await updateProvider({
-                          ownerUserId: userId,
-                          provider: provider.name,
-                          model,
-                        });
+                        try {
+                          const res = await fetch('/api/settings', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              defaultProvider: provider.name,
+                            }),
+                          });
+                          if (res.ok) {
+                            const data = await res.json();
+                            setSettings(data.settings);
+                          }
+                        } catch (error) {
+                          console.error('Failed to set default provider:', error);
+                        }
                       }}
                     >
                       Set as Default

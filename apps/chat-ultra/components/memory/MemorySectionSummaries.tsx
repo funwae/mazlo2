@@ -1,10 +1,7 @@
 "use client";
 
-import { useQuery, useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/Button";
-import { useState } from "react";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useState, useEffect } from "react";
 
 interface MemorySectionSummariesProps {
   roomId: string;
@@ -19,25 +16,36 @@ export function MemorySectionSummaries({
 }: MemorySectionSummariesProps) {
   const [isRegeneratingThread, setIsRegeneratingThread] = useState(false);
   const [isRegeneratingRoom, setIsRegeneratingRoom] = useState(false);
+  const [summaries, setSummaries] = useState<{
+    threadSummary?: { content: string };
+    roomSummary?: { content: string };
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Query summaries
-  const summaries = useQuery(api.memory.getSummariesForRoomAndThread, {
-    ownerUserId: ownerUserId as Id<"users">,
-    roomId: roomId as Id<"rooms">,
-    threadId: threadId as Id<"threads"> | undefined,
-  });
+  useEffect(() => {
+    fetchSummaries();
+  }, [roomId, threadId, ownerUserId]);
 
-  const summarizeThread = useAction(api.memory.summarizeThread);
-  const summarizeRoom = useAction(api.memory.summarizeRoom);
+  const fetchSummaries = async () => {
+    try {
+      const res = await fetch(`/api/memories/summaries?roomId=${roomId}&threadId=${threadId || ''}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSummaries(data.summaries || {});
+      }
+    } catch (error) {
+      console.error('Error fetching summaries:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRegenerateThread = async () => {
     if (!threadId) return;
     setIsRegeneratingThread(true);
     try {
-      await summarizeThread({
-        threadId: threadId as Id<"threads">,
-        ownerUserId: ownerUserId as Id<"users">,
-      });
+      // TODO: Implement summarize thread via API
+      await fetchSummaries();
     } catch (error) {
       console.error("Failed to regenerate thread summary:", error);
     } finally {
@@ -48,10 +56,8 @@ export function MemorySectionSummaries({
   const handleRegenerateRoom = async () => {
     setIsRegeneratingRoom(true);
     try {
-      await summarizeRoom({
-        roomId: roomId as Id<"rooms">,
-        ownerUserId: ownerUserId as Id<"users">,
-      });
+      // TODO: Implement summarize room via API
+      await fetchSummaries();
     } catch (error) {
       console.error("Failed to regenerate room summary:", error);
     } finally {
@@ -59,7 +65,7 @@ export function MemorySectionSummaries({
     }
   };
 
-  if (summaries === undefined) {
+  if (loading) {
     return (
       <div className="text-body-small text-text-muted">加载中...</div>
     );

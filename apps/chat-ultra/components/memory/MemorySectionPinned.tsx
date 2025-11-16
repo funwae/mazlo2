@@ -1,11 +1,16 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { MemoryItemRow } from "./MemoryItemRow";
 import { MemoryEditDialog } from "./MemoryEditDialog";
-import { useState } from "react";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useState, useEffect } from "react";
+
+interface Memory {
+  _id: string;
+  scope: string;
+  content: string;
+  importance: number;
+  [key: string]: any;
+}
 
 interface MemorySectionPinnedProps {
   roomId: string;
@@ -18,18 +23,29 @@ export function MemorySectionPinned({
   threadId,
   ownerUserId,
 }: MemorySectionPinnedProps) {
-  const [editingMemoryId, setEditingMemoryId] = useState<Id<"memories"> | null>(null);
+  const [editingMemoryId, setEditingMemoryId] = useState<string | null>(null);
+  const [memories, setMemories] = useState<Memory[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const memories = useQuery(api.memory.listForRoomAndThread, {
-    ownerUserId: ownerUserId as Id<"users">,
-    roomId: roomId as Id<"rooms">,
-    threadId: threadId as Id<"threads"> | undefined,
-  });
+  useEffect(() => {
+    fetchMemories();
+  }, [roomId, threadId, ownerUserId]);
 
-  const updateMemory = useMutation(api.memory.update);
-  const forgetMemory = useMutation(api.memory.forget);
+  const fetchMemories = async () => {
+    try {
+      const res = await fetch(`/api/memories?roomId=${roomId}&threadId=${threadId || ''}`);
+      if (res.ok) {
+        const data = await res.json();
+        setMemories(data.memories || []);
+      }
+    } catch (error) {
+      console.error('Error fetching memories:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (memories === undefined) {
+  if (loading) {
     return <div className="text-body-small text-text-muted">加载中...</div>;
   }
 
@@ -49,13 +65,12 @@ export function MemorySectionPinned({
           memory={memory}
           onEdit={() => setEditingMemoryId(memory._id)}
           onForget={async () => {
-            await forgetMemory({ memoryId: memory._id });
+            // TODO: Implement forget via API
+            await fetchMemories();
           }}
           onScopeChange={async (newScope: string) => {
-            await updateMemory({
-              memoryId: memory._id,
-              scope: newScope,
-            });
+            // TODO: Implement scope change via API
+            await fetchMemories();
           }}
         />
       ))}
@@ -63,7 +78,10 @@ export function MemorySectionPinned({
       {editingMemoryId && (
         <MemoryEditDialog
           memoryId={editingMemoryId}
-          onClose={() => setEditingMemoryId(null)}
+          onClose={() => {
+            setEditingMemoryId(null);
+            fetchMemories();
+          }}
         />
       )}
     </div>

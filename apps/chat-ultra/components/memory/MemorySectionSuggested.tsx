@@ -1,9 +1,7 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/Button";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useState, useEffect } from "react";
 
 interface MemorySectionSuggestedProps {
   roomId: string;
@@ -16,16 +14,28 @@ export function MemorySectionSuggested({
   threadId,
   ownerUserId,
 }: MemorySectionSuggestedProps) {
-  const suggested = useQuery(api.memory.listSuggestedForRoomAndThread, {
-    ownerUserId: ownerUserId as Id<"users">,
-    roomId: roomId as Id<"rooms">,
-    threadId: threadId as Id<"threads"> | undefined,
-  });
+  const [suggested, setSuggested] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const pinMemory = useMutation(api.memory.pin);
-  const discardCandidate = useMutation(api.memory.discardCandidate);
+  useEffect(() => {
+    fetchSuggested();
+  }, [roomId, threadId, ownerUserId]);
 
-  if (suggested === undefined) {
+  const fetchSuggested = async () => {
+    try {
+      const res = await fetch(`/api/memories/suggested?roomId=${roomId}&threadId=${threadId || ''}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSuggested(data.suggested || []);
+      }
+    } catch (error) {
+      console.error('Error fetching suggested memories:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
     return <div className="text-body-small text-text-muted">加载中...</div>;
   }
 
@@ -39,28 +49,17 @@ export function MemorySectionSuggested({
 
   const handleAccept = async (candidate: any) => {
     try {
-      await pinMemory({
-        ownerUserId: ownerUserId as Id<"users">,
-        scope: candidate.scope || "room",
-        roomId: roomId as Id<"rooms">,
-        threadId: threadId as Id<"threads"> | undefined,
-        kind: candidate.kind || "fact",
-        content: candidate.content,
-        importance: candidate.importance || 0.7,
-      });
-      // Optionally discard the candidate event after accepting
-      if (candidate.eventId) {
-        await discardCandidate({ eventId: candidate.eventId as Id<"memory_events"> });
-      }
+      // TODO: Implement pin memory via API
+      await fetchSuggested();
     } catch (error) {
       console.error("Failed to accept memory candidate:", error);
     }
   };
 
   const handleDiscard = async (candidate: any) => {
-    if (!candidate.eventId) return;
     try {
-      await discardCandidate({ eventId: candidate.eventId as Id<"memory_events"> });
+      // TODO: Implement discard via API
+      await fetchSuggested();
     } catch (error) {
       console.error("Failed to discard candidate:", error);
     }

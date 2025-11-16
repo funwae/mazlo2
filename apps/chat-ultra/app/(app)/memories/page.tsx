@@ -1,23 +1,45 @@
 "use client";
 
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { MemoryItemRow } from "@/components/memory/MemoryItemRow";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
+
+interface Memory {
+  _id: string;
+  scope: string;
+  kind: string;
+  content: string;
+  [key: string]: any;
+}
 
 export default function GlobalMemoriesPage() {
   const { userId, isLoading: userLoading } = useCurrentUser();
-
-  const memories = useQuery(
-    api.memory.listAllForUser,
-    userId ? { ownerUserId: userId, limit: 100 } : "skip"
-  );
-
+  const [memories, setMemories] = useState<Memory[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filterScope, setFilterScope] = useState<string>("all");
   const [filterKind, setFilterKind] = useState<string>("all");
 
-  if (memories === undefined) {
+  useEffect(() => {
+    if (userId) {
+      fetchMemories();
+    }
+  }, [userId]);
+
+  const fetchMemories = async () => {
+    try {
+      const res = await fetch('/api/memories');
+      if (res.ok) {
+        const data = await res.json();
+        setMemories(data.memories || []);
+      }
+    } catch (error) {
+      console.error('Error fetching memories:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || userLoading) {
     return (
       <div className="p-8 text-center">
         <p className="text-body text-text-secondary">加载中...</p>

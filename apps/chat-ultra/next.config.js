@@ -72,7 +72,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self' https://api.openai.com https://*.supabase.co https://api.z.ai https://*.convex.cloud",
+              "connect-src 'self' https://api.openai.com https://*.supabase.co https://api.z.ai",
             ].join('; '),
           },
         ],

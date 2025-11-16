@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npx convex codegen --typecheck disable || true",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -13,7 +12,6 @@
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "convex": "^1.15.0",
     "@supabase/supabase-js": "^2.39.0",
     "@supabase/auth-helpers-nextjs": "^0.8.0",
     "@supabase/ssr": "^0.5.0",

@@ -3,10 +3,17 @@
 import { MemoryScopeTag } from "./MemoryScopeTag";
 import { MemoryImportanceBadge } from "./MemoryImportanceBadge";
 import { Button } from "@/components/ui/Button";
-import type { Doc } from "@/convex/_generated/dataModel";
+interface Memory {
+  _id: string;
+  scope: string;
+  kind?: string;
+  content: string;
+  importance: number;
+  [key: string]: any;
+}
 
 interface MemoryItemRowProps {
-  memory: Doc<"memories">;
+  memory: Memory;
   onEdit: () => void;
   onForget: () => void;
   onScopeChange: (newScope: string) => void;

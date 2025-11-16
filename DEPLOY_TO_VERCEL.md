@@ -1,13 +1,12 @@
 # Deploy to Vercel - Complete Step-by-Step Guide
 
-This guide will walk you through deploying your Chat Ultra application to Vercel, including setting up Convex, Supabase, and all required environment variables.
+This guide will walk you through deploying your Chat Ultra application to Vercel, including setting up Supabase and all required environment variables.
 
 ## Prerequisites
 
 - A GitHub account (or GitLab/Bitbucket)
 - A Vercel account (sign up at https://vercel.com - it's free)
 - A Supabase account (sign up at https://supabase.com - free tier available)
-- A Convex account (will be created during setup)
 
 ---
 
@@ -24,55 +23,9 @@ This guide will walk you through deploying your Chat Ultra application to Vercel
 
 ---
 
-## Step 2: Set Up Convex (Backend Database)
+## Step 2: Set Up Supabase (Authentication & File Storage)
 
-Convex is your backend database. You need to set it up first to get your deployment URL.
-
-### 2.1: Install Convex CLI (if not already installed)
-
-```bash
-npm install -g convex
-```
-
-### 2.2: Set Up Convex Project
-
-1. **Navigate to the app directory:**
-   ```bash
-   cd apps/chat-ultra
-   ```
-
-2. **Run the Convex setup:**
-   ```bash
-   npx convex dev
-   ```
-
-3. **Follow the prompts:**
-   - If you're not logged in, it will open a browser to log in or create an account
-   - It will ask you to create a new project - say "Yes"
-   - Give your project a name (e.g., "chat-ultra")
-   - Wait for it to deploy your functions
-
-4. **Get your Convex URL:**
-   - After setup completes, you'll see a URL like: `https://your-project-name.convex.cloud`
-   - This URL is also saved in `apps/chat-ultra/.env.local` as `CONVEX_DEPLOYMENT`
-   - **COPY THIS URL** - you'll need it for Vercel
-
-5. **Deploy to Production:**
-   ```bash
-   npx convex deploy --prod
-   ```
-
-   This ensures your Convex functions are deployed to production (not just dev).
-
-**✅ You should now have:**
-- A Convex project created
-- A Convex deployment URL (e.g., `https://your-project-name.convex.cloud`)
-
----
-
-## Step 3: Set Up Supabase (Authentication & File Storage)
-
-### 3.1: Create Supabase Project
+### 2.1: Create Supabase Project
 
 1. Go to https://supabase.com and sign in
 2. Click **"New Project"**
@@ -84,7 +37,7 @@ npm install -g convex
 4. Click **"Create new project"**
 5. Wait 2-3 minutes for the project to finish setting up
 
-### 3.2: Get Supabase Credentials
+### 2.2: Get Supabase Credentials
 
 1. In your Supabase project dashboard, go to **Settings** → **API**
 2. Copy these values (you'll need them for Vercel):
@@ -92,14 +45,14 @@ npm install -g convex
    - **anon public** key (under "Project API keys")
    - **service_role secret** key (under "Project API keys" - keep this secret!)
 
-### 3.3: Get Database Connection String
+### 2.3: Get Database Connection String
 
 1. Go to **Settings** → **Database**
 2. Under "Connection string", select **"URI"**
 3. Copy the connection string (it will look like: `postgresql://postgres:[YOUR-PASSWORD]@xxxxx.supabase.co:5432/postgres`)
 4. **Replace `[YOUR-PASSWORD]`** with the database password you created in step 3.1
 
-### 3.4: Create Storage Bucket
+### 2.4: Create Storage Bucket
 
 1. In Supabase dashboard, go to **Storage**
 2. Click **"Create bucket"**
@@ -117,14 +70,14 @@ npm install -g convex
 
 ---
 
-## Step 4: Connect Repository to Vercel
+## Step 3: Connect Repository to Vercel
 
 1. Go to https://vercel.com/new
 2. Click **"Import Git Repository"**
 3. Select your repository (GitHub/GitLab/Bitbucket)
 4. Click **"Import"**
 
-### 4.1: Configure Project Settings
+### 3.1: Configure Project Settings
 
 **⚠️ IMPORTANT:** Set these settings exactly as shown:
 
@@ -139,7 +92,7 @@ npm install -g convex
 
 ---
 
-## Step 5: Set Environment Variables in Vercel
+## Step 4: Set Environment Variables in Vercel
 
 Before deploying, you need to add all environment variables.
 
@@ -156,7 +109,6 @@ Add these one by one:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `your_anon_key_here` | From Supabase Settings → API |
 | `SUPABASE_SERVICE_ROLE_KEY` | `your_service_role_key_here` | From Supabase Settings → API |
 | `DATABASE_URL` | `postgresql://postgres:password@xxxxx.supabase.co:5432/postgres` | Your database connection string |
-| `NEXT_PUBLIC_CONVEX_URL` | `https://your-project-name.convex.cloud` | Your Convex deployment URL from Step 2 |
 | `NEXT_PUBLIC_APP_URL` | `https://your-project.vercel.app` | Your Vercel URL (you'll get this after first deploy, or use a placeholder for now) |
 | `ZAI_API_KEY` | `your_zai_api_key` | Your z.ai API key (if you have one) |
 | `SITE_PASSWORD` | `your_secure_password` | A strong password for site protection (generate with: `openssl rand -base64 32`) |
@@ -176,25 +128,25 @@ For each variable:
 4. Select environments: **Production**, **Preview**, and **Development** (check all three)
 5. Click **"Save"**
 
-**✅ After adding all variables, you should have 8-9 environment variables set.**
+**✅ After adding all variables, you should have 7-8 environment variables set.**
 
 ---
 
-## Step 6: Deploy to Vercel
+## Step 5: Deploy to Vercel
 
 1. Scroll to the bottom of the Vercel project setup page
 2. Click **"Deploy"**
 3. Wait 3-5 minutes for the build to complete
 4. Watch the build logs - if there are errors, they'll show here
 
-### 6.1: Get Your Deployment URL
+### 5.1: Get Your Deployment URL
 
 After deployment completes:
 1. You'll see a success message
 2. Your deployment URL will be shown (e.g., `https://your-project.vercel.app`)
 3. **Copy this URL**
 
-### 6.2: Update NEXT_PUBLIC_APP_URL
+### 5.2: Update NEXT_PUBLIC_APP_URL
 
 1. Go to your Vercel project dashboard
 2. Click **Settings** → **Environment Variables**
@@ -207,7 +159,7 @@ After deployment completes:
 
 ---
 
-## Step 7: Run Database Migrations
+## Step 6: Run Database Migrations
 
 Your Supabase database needs the schema. You can do this via Supabase SQL Editor:
 
@@ -222,7 +174,7 @@ Your Supabase database needs the schema. You can do this via Supabase SQL Editor
 
 ---
 
-## Step 8: Test Your Deployment
+## Step 7: Test Your Deployment
 
 Visit your Vercel URL and test:
 
@@ -259,17 +211,6 @@ Visit your Vercel URL and test:
 - Check Supabase project is active (not paused)
 - Verify the connection string uses the correct format: `postgresql://postgres:password@host:5432/postgres`
 
-### Convex Errors
-
-**Error: "Missing NEXT_PUBLIC_CONVEX_URL"**
-- Make sure you set `NEXT_PUBLIC_CONVEX_URL` in Vercel environment variables
-- Verify the URL is correct (should be `https://your-project.convex.cloud`)
-- Redeploy after adding the variable
-
-**Error: "Convex functions not found"**
-- Make sure you ran `npx convex deploy --prod` from `apps/chat-ultra` directory
-- Check that your Convex project is active
-
 ### Password Protection Not Working
 
 - Verify `SITE_PASSWORD` is set in Vercel environment variables
@@ -293,7 +234,6 @@ Before deploying, make sure you have:
 - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - [ ] `SUPABASE_SERVICE_ROLE_KEY`
 - [ ] `DATABASE_URL`
-- [ ] `NEXT_PUBLIC_CONVEX_URL`
 - [ ] `NEXT_PUBLIC_APP_URL` (update after first deploy)
 - [ ] `ZAI_API_KEY`
 - [ ] `SITE_PASSWORD`
@@ -328,15 +268,13 @@ If you encounter issues:
 2. Check function logs in Vercel dashboard
 3. Check browser console for client-side errors
 4. Verify all environment variables are set correctly
-5. Make sure Convex is deployed: `npx convex deploy --prod`
-6. Make sure Supabase project is active
+5. Make sure Supabase project is active
 
 ---
 
 ## Summary
 
 You've now:
-- ✅ Set up Convex backend
 - ✅ Set up Supabase for auth and storage
 - ✅ Deployed to Vercel
 - ✅ Configured all environment variables

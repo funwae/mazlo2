@@ -1,9 +1,6 @@
 import { buildMazloPrompt } from "./buildPrompt";
 import { getDefaultProvider } from "@/lib/provider";
-import { ConvexHttpClient } from "convex/browser";
-import { api } from "@/convex/_generated/api";
-
-const convexClient = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { createMessage, getMessagesByThread } from "@/lib/data/messages";
 
 export interface HandleUserMessageInput {
   roomId: string;
@@ -27,39 +24,26 @@ export async function* handleUserMessage(input: HandleUserMessageInput) {
   } = input;
 
   try {
-    // 1. Save user message to Convex
-    const userMessageId = await convexClient.mutation(api.messages.send, {
-      roomId: roomId as any,
-      threadId: threadId ? (threadId as any) : undefined,
-      senderType: "user",
-      senderUserId: userId as any,
+    // 1. Save user message
+    const savedUserMessage = await createMessage({
+      roomId,
+      threadId,
       role: "user",
-      content: userMessage,
+      content: input.userMessage,
     });
 
     // 2. Get recent messages for context
-    const recentMessages = await convexClient.query(
-      api.messages.listByRoomAndThread,
-      {
-        roomId: roomId as any,
-        threadId: threadId ? (threadId as any) : undefined,
-        limit: 40,
-      }
-    );
+    const recentMessages = await getMessagesByThread(threadId, 40);
 
-    // 3. Retrieve memories and summaries
-    const memoryBundle = await convexClient.action(api.memory.retrieveForReply, {
-      mode,
-      roomId: roomId as any,
-      threadId: threadId ? (threadId as any) : undefined,
-      ownerUserId: userId as any,
-      recentMessageIds: recentMessages.map((m: any) => m._id),
-      maxTokens: 1024,
-    });
+    // 3. Retrieve memories and summaries (placeholder - TODO: implement memory system)
+    const memoryBundle = {
+      memorySnippets: [] as any[],
+      summaries: [] as any[],
+    };
 
     // 4. Build prompt with memory
-    const conversationMessages = recentMessages.map((msg: any) => ({
-      role: msg.role,
+    const conversationMessages = recentMessages.map((msg) => ({
+      role: msg.role as "user" | "assistant" | "system",
       content: msg.content,
     }));
 
@@ -72,7 +56,7 @@ export async function* handleUserMessage(input: HandleUserMessageInput) {
     // Add the current user message
     messages.push({
       role: "user",
-      content: userMessage,
+      content: input.userMessage,
     });
 
     // 5. Get provider and generate response
@@ -101,7 +85,7 @@ export async function* handleUserMessage(input: HandleUserMessageInput) {
     traceSteps.push({
       step_number: 1,
       action_type: "Plan",
-      description: `Processing ${mode} request in room "${roomId}" with ${memoryBundle.memorySnippets.length} memories`,
+      description: `Processing ${mode} request in room "${roomId}"`,
     });
 
     // Use streaming if provider supports it
@@ -125,37 +109,19 @@ export async function* handleUserMessage(input: HandleUserMessageInput) {
     }
 
     // 6. Save Mazlo message
-    const mazloMessageId = await convexClient.mutation(api.messages.send, {
-      roomId: roomId as any,
-      threadId: threadId ? (threadId as any) : undefined,
-      senderType: "mazlo",
+    const mazloMessage = await createMessage({
+      roomId,
+      threadId,
       role: "assistant",
       content: fullContent,
-      meta: {
-        provider: `${provider}:${model}`,
-        traceSteps,
-        memoryCount: memoryBundle.memorySnippets.length,
-      },
+      provider: `${provider}:${model}`,
     });
 
     // 7. Trigger memory intake asynchronously (fire-and-forget)
-    convexClient
-      .action(api.memory.intakeForMessage, {
-        messageId: userMessageId,
-      })
-      .catch((err) => {
-        console.error("Memory intake failed:", err);
-      });
+    // TODO: Implement memory intake system
+    // For now, we skip memory intake
 
-    convexClient
-      .action(api.memory.intakeForMessage, {
-        messageId: mazloMessageId,
-      })
-      .catch((err) => {
-        console.error("Memory intake failed:", err);
-      });
-
-    yield { type: "done", messageId: mazloMessageId };
+    yield { type: "done", messageId: mazloMessage.id };
   } catch (error: any) {
     yield { type: "error", error: error.message };
     throw error;

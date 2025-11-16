@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { ChatTimeline } from "@/components/room/ChatTimeline";
 import { Composer } from "@/components/room/Composer";
 import { MazloMemoryPanel } from "@/components/memory/MazloMemoryPanel";
@@ -15,41 +13,72 @@ interface Message {
   createdAt: string;
 }
 
+interface Room {
+  id: string;
+  name: string;
+}
+
+interface Thread {
+  id: string;
+  title: string;
+}
+
 export default function MazloGlobalPage() {
   const { userId, isLoading: userLoading } = useCurrentUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [streamingContent, setStreamingContent] = useState('');
+  const [globalRoom, setGlobalRoom] = useState<Room | null>(null);
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Get or create global room
-  const globalRoom = useQuery(
-    api.rooms.getGlobalForUser,
-    userId ? { userId } : "skip"
-  );
-
-  // Get default thread (or create one) - must be called unconditionally
-  const threads = useQuery(
-    api.threads.listByRoom,
-    globalRoom?._id ? { roomId: globalRoom._id } : "skip"
-  );
-
-  const currentThreadId = threads?.[0]?._id;
+  // Fetch global room and threads
+  useEffect(() => {
+    if (userId) {
+      fetchGlobalRoom();
+    }
+  }, [userId]);
 
   // Fetch messages when thread is available
   useEffect(() => {
-    if (currentThreadId && globalRoom?._id) {
+    if (threads.length > 0 && globalRoom) {
       fetchMessages();
     }
-  }, [currentThreadId, globalRoom?._id]);
+  }, [threads, globalRoom]);
+
+  const fetchGlobalRoom = async () => {
+    try {
+      const res = await fetch('/api/rooms/global');
+      if (res.ok) {
+        const data = await res.json();
+        setGlobalRoom(data.room);
+        setThreads(data.threads || []);
+
+        // Create a thread if none exists
+        if (data.threads.length === 0 && data.room) {
+          const newThread = await fetch('/api/rooms/' + data.room.id + '/threads', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: 'Main Thread' }),
+          });
+          if (newThread.ok) {
+            const threadData = await newThread.json();
+            setThreads([threadData.thread]);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching global room:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchMessages = async () => {
-    if (!currentThreadId || !globalRoom?._id) return;
+    if (!threads[0]?.id || !globalRoom?.id) return;
     try {
-      // Convert Convex ID to string for API route
-      const roomIdStr = globalRoom._id as string;
-      const threadIdStr = currentThreadId as string;
-      const res = await fetch(`/api/rooms/${roomIdStr}/threads/${threadIdStr}/messages`);
+      const res = await fetch(`/api/rooms/${globalRoom.id}/threads/${threads[0].id}/messages`);
       const data = await res.json();
-      
+
       // Transform API messages to ChatTimeline format
       const transformedMessages: Message[] = (data.messages || []).map((msg: any) => ({
         id: msg.id,
@@ -57,14 +86,14 @@ export default function MazloGlobalPage() {
         content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
         createdAt: msg.createdAt || new Date().toISOString(),
       }));
-      
+
       setMessages(transformedMessages);
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
   };
 
-  if (!globalRoom) {
+  if (loading || userLoading) {
     return (
       <div className="p-8 text-center">
         <p className="text-body text-text-secondary">
@@ -73,6 +102,18 @@ export default function MazloGlobalPage() {
       </div>
     );
   }
+
+  if (!globalRoom) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-body text-text-secondary">
+          无法加载全局房间
+        </p>
+      </div>
+    );
+  }
+
+  const currentThreadId = threads[0]?.id;
 
   if (!currentThreadId) {
     return (
@@ -106,8 +147,8 @@ export default function MazloGlobalPage() {
 
         <div className="border-t border-border-default p-4">
           <Composer
-            roomId={globalRoom._id as string}
-            threadId={currentThreadId as string}
+            roomId={globalRoom.id}
+            threadId={currentThreadId}
             mode="global"
           />
         </div>
@@ -117,7 +158,7 @@ export default function MazloGlobalPage() {
       {userId && (
         <div className="w-80 border-l border-border-default">
           <MazloMemoryPanel
-            roomId={globalRoom._id as string}
+            roomId={globalRoom.id}
             ownerUserId={userId}
           />
         </div>
