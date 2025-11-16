@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ChatTimeline } from "@/components/room/ChatTimeline";
@@ -7,8 +8,17 @@ import { Composer } from "@/components/room/Composer";
 import { MazloMemoryPanel } from "@/components/memory/MazloMemoryPanel";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
 
+interface Message {
+  id: string;
+  role: 'user' | 'mazlo' | 'system';
+  content: string;
+  createdAt: string;
+}
+
 export default function MazloGlobalPage() {
   const { userId, isLoading: userLoading } = useCurrentUser();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [streamingContent, setStreamingContent] = useState('');
 
   // Get or create global room
   const globalRoom = useQuery(
@@ -22,6 +32,38 @@ export default function MazloGlobalPage() {
     globalRoom?._id ? { roomId: globalRoom._id } : "skip"
   );
 
+  const currentThreadId = threads?.[0]?._id;
+
+  // Fetch messages when thread is available
+  useEffect(() => {
+    if (currentThreadId && globalRoom?._id) {
+      fetchMessages();
+    }
+  }, [currentThreadId, globalRoom?._id]);
+
+  const fetchMessages = async () => {
+    if (!currentThreadId || !globalRoom?._id) return;
+    try {
+      // Convert Convex ID to string for API route
+      const roomIdStr = globalRoom._id as string;
+      const threadIdStr = currentThreadId as string;
+      const res = await fetch(`/api/rooms/${roomIdStr}/threads/${threadIdStr}/messages`);
+      const data = await res.json();
+      
+      // Transform API messages to ChatTimeline format
+      const transformedMessages: Message[] = (data.messages || []).map((msg: any) => ({
+        id: msg.id,
+        role: msg.role === 'assistant' ? 'mazlo' : msg.role === 'user' ? 'user' : 'system',
+        content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
+        createdAt: msg.createdAt || new Date().toISOString(),
+      }));
+      
+      setMessages(transformedMessages);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  };
+
   if (!globalRoom) {
     return (
       <div className="p-8 text-center">
@@ -31,8 +73,6 @@ export default function MazloGlobalPage() {
       </div>
     );
   }
-
-  const currentThreadId = threads?.[0]?._id;
 
   if (!currentThreadId) {
     return (
@@ -59,16 +99,15 @@ export default function MazloGlobalPage() {
 
         <div className="flex-1 overflow-y-auto">
           <ChatTimeline
-            roomId={globalRoom._id}
-            threadId={currentThreadId}
-            mode="global"
+            messages={messages}
+            streamingContent={streamingContent}
           />
         </div>
 
         <div className="border-t border-border-default p-4">
           <Composer
-            roomId={globalRoom._id}
-            threadId={currentThreadId}
+            roomId={globalRoom._id as string}
+            threadId={currentThreadId as string}
             mode="global"
           />
         </div>
@@ -78,7 +117,7 @@ export default function MazloGlobalPage() {
       {userId && (
         <div className="w-80 border-l border-border-default">
           <MazloMemoryPanel
-            roomId={globalRoom._id}
+            roomId={globalRoom._id as string}
             ownerUserId={userId}
           />
         </div>
