@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/Card';
 import { ChatTimeline } from '@/components/room/ChatTimeline';
 import { Composer } from '@/components/room/Composer';
 import { MazloPanel } from '@/components/room/MazloPanel';

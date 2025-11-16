@@ -16,6 +16,12 @@ export default function MazloGlobalPage() {
     userId ? { userId } : "skip"
   );
 
+  // Get default thread (or create one) - must be called unconditionally
+  const threads = useQuery(
+    api.threads.listByRoom,
+    globalRoom?._id ? { roomId: globalRoom._id } : "skip"
+  );
+
   if (!globalRoom) {
     return (
       <div className="p-8 text-center">
@@ -25,11 +31,6 @@ export default function MazloGlobalPage() {
       </div>
     );
   }
-
-  // Get default thread (or create one)
-  const threads = useQuery(api.threads.listByRoom, {
-    roomId: globalRoom._id,
-  });
 
   const currentThreadId = threads?.[0]?._id;
 

@@ -23,6 +23,7 @@ export default function ProvidersPage() {
   const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [testing, setTesting] = useState<Record<string, boolean>>({});
+  const [modelStates, setModelStates] = useState<Record<string, string>>({});
 
   const providerConfigs = useQuery(
     api.provider.listForUser,
@@ -155,7 +156,8 @@ export default function ProvidersPage() {
           const isDefault = settings?.defaultProvider === provider.name;
           const currentModel = config?.defaultModel || provider.defaultModel;
           const apiKey = apiKeys[provider.name] || "";
-          const [model, setModel] = useState(currentModel);
+          const model = modelStates[provider.name] || currentModel;
+          const setModel = (value: string) => setModelStates(prev => ({ ...prev, [provider.name]: value }));
 
           return (
             <Card key={provider.name} className="p-6">
