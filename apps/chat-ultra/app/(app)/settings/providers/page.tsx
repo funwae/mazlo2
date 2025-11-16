@@ -219,11 +219,6 @@ export default function ProvidersPage() {
                   onChange={(e) =>
                     setApiKeys((prev) => ({ ...prev, [provider.name]: e.target.value }))
                   }
-                  helpText={
-                    config?.apiKeyRef
-                      ? "API key is saved. Enter a new key to update."
-                      : "Your API key is encrypted and stored securely"
-                  }
                 />
 
                 <div>

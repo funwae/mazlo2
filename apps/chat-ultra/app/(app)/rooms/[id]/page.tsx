@@ -26,7 +26,7 @@ interface Room {
   primaryLanguage?: string;
   secondaryLanguages?: string[];
   threads?: Thread[];
-  pins?: Array<{ id: string; title: string; tag: string; messageId: string }>;
+  pins?: Array<{ id: string; title: string; tag: 'decision' | 'insight' | 'spec' | 'link'; messageId: string; createdAt: string }>;
   tasks?: Array<{
     id: string;
     title: string;
@@ -74,12 +74,14 @@ export default function RoomDetailPage() {
     if (roomId) {
       fetchRoom();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId]);
 
   useEffect(() => {
     if (selectedThreadId) {
       fetchMessages();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedThreadId]);
 
   // Handle keyboard shortcuts
@@ -312,7 +314,7 @@ export default function RoomDetailPage() {
         <Card className="p-8 max-w-md text-center">
           <h2 className="text-h2 font-semibold text-text-primary mb-4">Room not found</h2>
           <p className="text-body text-text-secondary mb-6">
-            The room you're looking for doesn't exist or you don't have access to it.
+            The room you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.
           </p>
           <Button variant="primary" onClick={() => window.location.href = '/app/rooms'}>
             Go to Rooms
@@ -419,7 +421,6 @@ export default function RoomDetailPage() {
             <div className="flex items-center gap-2">
               <Button
                 variant="secondary"
-                size="sm"
                 onClick={async () => {
                   try {
                     const res = await fetch(`/api/rooms/${roomId}/export?format=markdown`);
@@ -445,7 +446,6 @@ export default function RoomDetailPage() {
               </Button>
               <Button
                 variant="secondary"
-                size="sm"
                 onClick={async () => {
                   try {
                     const res = await fetch(`/api/rooms/${roomId}/export?format=json`);
@@ -471,7 +471,6 @@ export default function RoomDetailPage() {
               </Button>
               <Button
                 variant={bridgeMode ? 'primary' : 'secondary'}
-                size="sm"
                 onClick={() => setBridgeMode(!bridgeMode)}
               >
                 {bridgeMode ? 'Close Bridge' : 'Open Bridge'}
@@ -484,14 +483,16 @@ export default function RoomDetailPage() {
         {selectedThreadId ? (
           bridgeMode ? (
             <BridgeView
-              messages={messages.map((m) => ({
-                id: m.id,
-                role: m.role,
-                content: m.content,
-                translation: (m as any).translation,
-                intentSummary: (m as any).intentSummary,
-                createdAt: m.createdAt,
-              }))}
+              messages={messages
+                .filter((m) => m.role !== 'system')
+                .map((m) => ({
+                  id: m.id,
+                  role: m.role === 'mazlo' ? 'mazlo' : 'user',
+                  content: m.content,
+                  translation: (m as any).translation,
+                  intentSummary: (m as any).intentSummary,
+                  createdAt: m.createdAt,
+                }))}
               primaryLanguage={room.primaryLanguage || 'en-US'}
               secondaryLanguage={room.secondaryLanguages?.[0] || 'zh-CN'}
               onSend={async (content, tone) => {

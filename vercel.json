@@ -1,6 +1,7 @@
 {
-  "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps",
-  "outputDirectory": ".next",
-  "framework": "nextjs"
+  "buildCommand": "cd apps/chat-ultra && npm run build",
+  "installCommand": "cd apps/chat-ultra && npm install --legacy-peer-deps",
+  "outputDirectory": "apps/chat-ultra/.next",
+  "framework": "nextjs",
+  "rootDirectory": "apps/chat-ultra"
 }

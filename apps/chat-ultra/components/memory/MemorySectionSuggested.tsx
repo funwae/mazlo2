@@ -88,14 +88,14 @@ export function MemorySectionSuggested({
           </div>
           <div className="flex gap-2">
             <Button
-              size="sm"
+             
               onClick={() => handleAccept(candidate)}
               className="flex-1"
             >
               保存
             </Button>
             <Button
-              size="sm"
+             
               variant="secondary"
               onClick={() => handleDiscard(candidate)}
               className="flex-1"

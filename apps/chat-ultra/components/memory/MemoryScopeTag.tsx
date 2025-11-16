@@ -14,15 +14,15 @@ export function MemoryScopeTag({ scope }: MemoryScopeTagProps) {
     system: "系统",
   };
 
-  const variants: Record<string, "active" | "language" | "inactive"> = {
+  const variants: Record<string, "active" | "language" | "paused"> = {
     thread: "language",
     room: "active",
     global: "active",
-    system: "inactive",
+    system: "paused",
   };
 
   return (
-    <Badge variant={variants[scope] || "inactive"}>
+    <Badge variant={variants[scope] || "paused"}>
       {labels[scope] || scope}
     </Badge>
   );

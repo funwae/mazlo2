@@ -16,6 +16,11 @@ export async function GET() {
     }
 
     const globalRoom = await getGlobalRoomForUser(user.id);
+
+    if (!globalRoom) {
+      return NextResponse.json({ error: 'Failed to create global room' }, { status: 500 });
+    }
+
     const threads = await getThreadsByRoom(globalRoom.id);
 
     return NextResponse.json({ room: globalRoom, threads });

@@ -65,20 +65,18 @@ export async function GET(request: Request) {
 
     // Search Messages
     if (type === 'all' || type === 'messages') {
-      let messageQuery = db
-        .select()
-        .from(messages)
-        .where(like(messages.content, searchTerm))
-        .limit(limit)
-        .offset(offset);
+      const messageConditions = [like(messages.content, searchTerm)];
 
       if (roomId) {
-        messageQuery = messageQuery.where(
-          and(like(messages.content, searchTerm), eq(messages.roomId, roomId))
-        );
+        messageConditions.push(eq(messages.roomId, roomId));
       }
 
-      const messageResults = await messageQuery;
+      const messageResults = await db
+        .select()
+        .from(messages)
+        .where(messageConditions.length > 1 ? and(...messageConditions) : messageConditions[0])
+        .limit(limit)
+        .offset(offset);
 
       // Get room info for messages
       for (const msg of messageResults) {

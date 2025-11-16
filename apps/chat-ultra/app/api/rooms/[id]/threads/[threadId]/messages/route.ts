@@ -81,11 +81,20 @@ export async function POST(
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+
+          if (!user) {
+            throw new Error('Unauthorized');
+          }
+
           for await (const chunk of handleUserMessage({
             roomId: params.id,
             threadId: params.threadId,
             userMessage: data.content,
-            mode: data.mode,
+            userId: user.id,
+            mode: 'room',
             provider: data.provider,
             model: data.model,
           })) {

@@ -38,12 +38,33 @@ export default function MazloGlobalPage() {
     }
   }, [userId]);
 
+  const fetchMessages = async () => {
+    if (!threads[0]?.id || !globalRoom?.id) return;
+    try {
+      const res = await fetch(`/api/rooms/${globalRoom.id}/threads/${threads[0].id}/messages`);
+      const data = await res.json();
+
+      // Transform API messages to ChatTimeline format
+      const transformedMessages: Message[] = (data.messages || []).map((msg: any) => ({
+        id: msg.id,
+        role: msg.role === 'assistant' ? 'mazlo' : msg.role === 'user' ? 'user' : 'system',
+        content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
+        createdAt: msg.createdAt || new Date().toISOString(),
+      }));
+
+      setMessages(transformedMessages);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  };
+
   // Fetch messages when thread is available
   useEffect(() => {
     if (threads.length > 0 && globalRoom) {
       fetchMessages();
     }
-  }, [threads, globalRoom]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [threads.length, globalRoom?.id]);
 
   const fetchGlobalRoom = async () => {
     try {
@@ -70,26 +91,6 @@ export default function MazloGlobalPage() {
       console.error('Error fetching global room:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchMessages = async () => {
-    if (!threads[0]?.id || !globalRoom?.id) return;
-    try {
-      const res = await fetch(`/api/rooms/${globalRoom.id}/threads/${threads[0].id}/messages`);
-      const data = await res.json();
-
-      // Transform API messages to ChatTimeline format
-      const transformedMessages: Message[] = (data.messages || []).map((msg: any) => ({
-        id: msg.id,
-        role: msg.role === 'assistant' ? 'mazlo' : msg.role === 'user' ? 'user' : 'system',
-        content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
-        createdAt: msg.createdAt || new Date().toISOString(),
-      }));
-
-      setMessages(transformedMessages);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
     }
   };
 
@@ -134,7 +135,7 @@ export default function MazloGlobalPage() {
             Mazlo Global
           </h1>
           <p className="text-body-small text-text-muted mt-1">
-            这是一间知道你所有项目与偏好的"总监办公室"。回答会更慢，但更有全局视角。
+            这是一间知道你所有项目与偏好的&ldquo;总监办公室&rdquo;。回答会更慢，但更有全局视角。
           </p>
         </div>
 
@@ -148,8 +149,22 @@ export default function MazloGlobalPage() {
         <div className="border-t border-border-default p-4">
           <Composer
             roomId={globalRoom.id}
-            threadId={currentThreadId}
-            mode="global"
+            onSend={async (content, mode, attachments) => {
+              if (!currentThreadId) return;
+              try {
+                const res = await fetch(`/api/rooms/${globalRoom.id}/threads/${currentThreadId}/messages`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ content, mode, attachments }),
+                });
+                if (res.ok) {
+                  fetchMessages();
+                }
+              } catch (error) {
+                console.error('Error sending message:', error);
+              }
+            }}
+            disabled={!currentThreadId}
           />
         </div>
       </div>

@@ -7,8 +7,9 @@ import { useCurrentUser } from "@/lib/auth/useCurrentUser";
 interface Memory {
   _id: string;
   scope: string;
-  kind: string;
+  kind?: string;
   content: string;
+  importance: number;
   [key: string]: any;
 }
 

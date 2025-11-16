@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, jsonb, integer, check } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, timestamp, jsonb, integer, check, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 
@@ -33,9 +33,9 @@ export const rooms = pgTable('rooms', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  userIdIdx: sql`idx_rooms_user_id`.on(table.userId),
-  statusIdx: sql`idx_rooms_status`.on(table.status),
-  updatedAtIdx: sql`idx_rooms_updated_at`.on(table.updatedAt),
+  userIdIdx: index('idx_rooms_user_id').on(table.userId),
+  statusIdx: index('idx_rooms_status').on(table.status),
+  updatedAtIdx: index('idx_rooms_updated_at').on(table.updatedAt),
   statusCheck: check('status_check', sql`${table.status} IN ('active', 'paused', 'archived')`),
 }));
 
@@ -46,8 +46,8 @@ export const threads = pgTable('threads', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  roomIdIdx: sql`idx_threads_room_id`.on(table.roomId),
-  updatedAtIdx: sql`idx_threads_updated_at`.on(table.updatedAt),
+  roomIdIdx: index('idx_threads_room_id').on(table.roomId),
+  updatedAtIdx: index('idx_threads_updated_at').on(table.updatedAt),
 }));
 
 export const messages = pgTable('messages', {
@@ -62,10 +62,10 @@ export const messages = pgTable('messages', {
   traceId: uuid('trace_id'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  roomIdIdx: sql`idx_messages_room_id`.on(table.roomId),
-  threadIdIdx: sql`idx_messages_thread_id`.on(table.threadId),
-  createdAtIdx: sql`idx_messages_created_at`.on(table.createdAt),
-  traceIdIdx: sql`idx_messages_trace_id`.on(table.traceId),
+  roomIdIdx: index('idx_messages_room_id').on(table.roomId),
+  threadIdIdx: index('idx_messages_thread_id').on(table.threadId),
+  createdAtIdx: index('idx_messages_created_at').on(table.createdAt),
+  traceIdIdx: index('idx_messages_trace_id').on(table.traceId),
   roleCheck: check('role_check', sql`${table.role} IN ('user', 'mazlo', 'system')`),
 }));
 
@@ -101,9 +101,9 @@ export const tasks = pgTable('tasks', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  roomIdIdx: sql`idx_tasks_room_id`.on(table.roomId),
-  statusIdx: sql`idx_tasks_status`.on(table.status),
-  dueDateIdx: sql`idx_tasks_due_date`.on(table.dueDate),
+  roomIdIdx: index('idx_tasks_room_id').on(table.roomId),
+  statusIdx: index('idx_tasks_status').on(table.status),
+  dueDateIdx: index('idx_tasks_due_date').on(table.dueDate),
   statusCheck: check('status_check', sql`${table.status} IN ('todo', 'doing', 'done')`),
 }));
 
@@ -117,8 +117,8 @@ export const pins = pgTable('pins', {
     .$type<'decision' | 'insight' | 'spec' | 'link'>(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  roomIdIdx: sql`idx_pins_room_id`.on(table.roomId),
-  messageIdIdx: sql`idx_pins_message_id`.on(table.messageId),
+  roomIdIdx: index('idx_pins_room_id').on(table.roomId),
+  messageIdIdx: index('idx_pins_message_id').on(table.messageId),
   tagCheck: check('tag_check', sql`${table.tag} IN ('decision', 'insight', 'spec', 'link')`),
 }));
 
@@ -130,9 +130,9 @@ export const usageSessions = pgTable('usage_sessions', {
   totalSeconds: integer('total_seconds'),
   roomId: uuid('room_id').references(() => rooms.id, { onDelete: 'set null' }),
 }, (table) => ({
-  userIdIdx: sql`idx_usage_sessions_user_id`.on(table.userId),
-  startedAtIdx: sql`idx_usage_sessions_started_at`.on(table.startedAt),
-  roomIdIdx: sql`idx_usage_sessions_room_id`.on(table.roomId),
+  userIdIdx: index('idx_usage_sessions_user_id').on(table.userId),
+  startedAtIdx: index('idx_usage_sessions_started_at').on(table.startedAt),
+  roomIdIdx: index('idx_usage_sessions_room_id').on(table.roomId),
 }));
 
 // Relations

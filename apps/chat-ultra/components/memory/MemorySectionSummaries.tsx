@@ -71,6 +71,10 @@ export function MemorySectionSummaries({
     );
   }
 
+  if (!summaries) {
+    return null;
+  }
+
   return (
     <div className="space-y-4">
       {threadId && (
@@ -80,7 +84,7 @@ export function MemorySectionSummaries({
               线程摘要
             </h4>
             <Button
-              size="sm"
+
               onClick={handleRegenerateThread}
               disabled={isRegeneratingThread}
             >
@@ -103,7 +107,7 @@ export function MemorySectionSummaries({
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-h4 font-semibold text-text-primary">房间摘要</h4>
           <Button
-            size="sm"
+
             onClick={handleRegenerateRoom}
             disabled={isRegeneratingRoom}
           >

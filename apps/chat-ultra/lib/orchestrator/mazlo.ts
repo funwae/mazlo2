@@ -88,31 +88,31 @@ export async function* handleUserMessage(input: HandleUserMessageInput) {
       description: `Processing ${mode} request in room "${roomId}"`,
     });
 
-    // Use streaming if provider supports it
-    if ("streamChat" in providerWithKey) {
-      for await (const chunk of (providerWithKey as any).streamChat(messages, {
-        model,
-        temperature: 0.7,
-      })) {
-        fullContent += chunk;
-        yield { type: "token", content: chunk };
-      }
-    } else {
-      // Fallback to non-streaming
-      const result = await providerWithKey.chatCompletion({
-        messages,
-        model,
-        temperature: 0.7,
-      });
-      fullContent = result.content;
-      yield { type: "token", content: result.content };
-    }
+          // Use streaming if provider supports it
+          if ("streamChat" in providerWithKey) {
+            for await (const chunk of (providerWithKey as any).streamChat(messages, {
+              model,
+              temperature: 0.7,
+            })) {
+              fullContent += chunk;
+              yield { type: "token", content: chunk };
+            }
+          } else {
+            // Fallback to non-streaming
+            const result = await (providerWithKey as any).chatCompletion({
+              messages,
+              model,
+              temperature: 0.7,
+            });
+            fullContent = result.content;
+            yield { type: "token", content: result.content };
+          }
 
     // 6. Save Mazlo message
     const mazloMessage = await createMessage({
       roomId,
       threadId,
-      role: "assistant",
+      role: "mazlo",
       content: fullContent,
       provider: `${provider}:${model}`,
     });

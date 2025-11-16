@@ -105,7 +105,7 @@ export function PinsPanel({ roomId, onPinClick }: PinsPanelProps) {
         <div className="flex items-center justify-between p-4 border-b border-border-default">
           <h3 className="text-h4 font-semibold text-text-primary">Pins</h3>
           <Button
-            size="sm"
+           
             onClick={() => {
               // This would typically be triggered from a message action
               // For now, we'll show the modal

@@ -25,12 +25,12 @@ export function ErrorMessage({
         </div>
         <div className="flex gap-2">
           {onRetry && (
-            <Button variant="secondary" size="sm" onClick={onRetry}>
+            <Button variant="secondary" onClick={onRetry}>
               Retry
             </Button>
           )}
           {onDismiss && (
-            <Button variant="text" size="sm" onClick={onDismiss}>
+            <Button variant="text" onClick={onDismiss}>
               Dismiss
             </Button>
           )}

@@ -9,10 +9,10 @@ interface MemoryImportanceBadgeProps {
 export function MemoryImportanceBadge({
   importance,
 }: MemoryImportanceBadgeProps) {
-  const getVariant = (imp: number): "active" | "language" | "inactive" => {
+  const getVariant = (imp: number): "active" | "language" | "paused" => {
     if (imp >= 0.8) return "active";
     if (imp >= 0.5) return "language";
-    return "inactive";
+    return "paused";
   };
 
   const getLabel = (imp: number): string => {

@@ -46,7 +46,12 @@ export async function getGlobalRoomForUser(userId: string) {
         status: 'active',
       })
       .returning();
-    globalRoom = newRoom;
+    // Fetch the room with relations to match the return type
+    const fetchedRoom = await getRoomById(newRoom.id);
+    if (!fetchedRoom) {
+      throw new Error('Failed to fetch created global room');
+    }
+    globalRoom = fetchedRoom;
   }
 
   return globalRoom;

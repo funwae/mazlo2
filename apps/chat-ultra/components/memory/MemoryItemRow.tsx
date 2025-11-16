@@ -38,19 +38,19 @@ export function MemoryItemRow({
       </div>
 
       <div className="flex gap-2 mt-2">
-        <Button size="sm" variant="secondary" onClick={onEdit}>
+        <Button variant="secondary" onClick={onEdit}>
           编辑
         </Button>
         {memory.scope === "room" && (
           <Button
-            size="sm"
+           
             variant="secondary"
             onClick={() => onScopeChange("global")}
           >
             升级为全局
           </Button>
         )}
-        <Button size="sm" variant="secondary" onClick={onForget}>
+        <Button variant="secondary" onClick={onForget}>
           忘记
         </Button>
       </div>

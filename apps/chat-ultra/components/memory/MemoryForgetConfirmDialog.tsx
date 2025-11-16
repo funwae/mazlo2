@@ -31,7 +31,7 @@ export function MemoryForgetConfirmDialog({
           <Button variant="secondary" onClick={onClose}>
             取消
           </Button>
-          <Button variant="danger" onClick={onConfirm}>
+          <Button variant="primary" onClick={onConfirm}>
             确认忘记
           </Button>
         </div>

@@ -1,4 +1,4 @@
-import { buildSystemPrompt } from './system-prompt';
+// Translation module - buildSystemPrompt not needed here
 
 export interface TranslationResult {
   translation: string;

@@ -2,9 +2,8 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { usageSessions } from '@/db/schema';
-import { eq, and, gte, sql } from 'drizzle-orm';
-import { tasks } from '@/db/schema';
+import { usageSessions, tasks, rooms } from '@/db/schema';
+import { eq, and, gte, sql, inArray } from 'drizzle-orm';
 
 export async function GET(request: Request) {
   try {
@@ -74,18 +73,22 @@ export async function GET(request: Request) {
       }
     }
 
-    // Get completed tasks count
-    const { tasks } = await import('@/db/schema');
-    const completedTasks = await db
+    // Get completed tasks count - tasks are linked to rooms, so get user's rooms first
+    const userRooms = await db.query.rooms.findMany({
+      where: eq(rooms.userId, session.user.id),
+    });
+    const roomIds = userRooms.map((r) => r.id);
+
+    const completedTasks = roomIds.length > 0 ? await db
       .select()
       .from(tasks)
       .where(
         and(
-          eq(tasks.userId, session.user.id),
+          inArray(tasks.roomId, roomIds),
           eq(tasks.status, 'done'),
           gte(tasks.updatedAt, startDate)
         )
-      );
+      ) : [];
 
     // Generate chart data grouped by date
     const chartDataMap = new Map<string, number>();

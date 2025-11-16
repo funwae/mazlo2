@@ -25,17 +25,20 @@ export async function GET(request: Request) {
     const startDate = url.searchParams.get('start_date');
     const endDate = url.searchParams.get('end_date');
 
-    let query = db.select().from(usageSessions).where(eq(usageSessions.userId, session.user.id));
+    const conditions = [eq(usageSessions.userId, session.user.id)];
 
     if (startDate) {
-      query = query.where(and(eq(usageSessions.userId, session.user.id), gte(usageSessions.startedAt, new Date(startDate))));
+      conditions.push(gte(usageSessions.startedAt, new Date(startDate)));
     }
 
     if (endDate) {
-      query = query.where(and(eq(usageSessions.userId, session.user.id), lte(usageSessions.startedAt, new Date(endDate))));
+      conditions.push(lte(usageSessions.startedAt, new Date(endDate)));
     }
 
-    const sessions = await query;
+    const sessions = await db
+      .select()
+      .from(usageSessions)
+      .where(conditions.length > 1 ? and(...conditions) : conditions[0]);
 
     return NextResponse.json({ sessions });
   } catch (error: any) {

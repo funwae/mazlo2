@@ -112,7 +112,6 @@ export function TraceView({ steps, tokenUsage, showFullTraceButton = true }: Tra
         {showFullTraceButton && normalizedSteps.length > 3 && (
           <div className="mt-4 pt-4 border-t border-border-default">
             <Button
-              size="sm"
               variant="secondary"
               onClick={() => setShowFullTrace(true)}
               className="w-full"
@@ -128,7 +127,7 @@ export function TraceView({ steps, tokenUsage, showFullTraceButton = true }: Tra
           isOpen={showFullTrace}
           onClose={() => setShowFullTrace(false)}
           title="Full Trace"
-          size="large"
+          size="lg"
         >
           <div className="max-h-[70vh] overflow-y-auto">
             {renderTraceContent()}

@@ -129,7 +129,7 @@ export function Composer({ onSend, disabled, roomId }: ComposerProps) {
             />
             <Button
               variant="secondary"
-              size="sm"
+             
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled || uploading || !roomId}
               title="Upload file"
