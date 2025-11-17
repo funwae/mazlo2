@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const url = req.nextUrl;
-  
+
   // Password protection (if SITE_PASSWORD is set)
   // Skip for static assets, API routes, and password check page
   if (
@@ -18,28 +18,43 @@ export async function middleware(req: NextRequest) {
     const sitePassword = process.env.SITE_PASSWORD;
     if (sitePassword && process.env.NODE_ENV === 'production') {
       const passwordCookie = req.cookies.get('site_password');
-      
+
       // If password cookie doesn't match, redirect to password check
       if (!passwordCookie || passwordCookie.value !== sitePassword) {
         return NextResponse.redirect(new URL('/password-check', req.url));
       }
     }
   }
-  
-  const supabase = createMiddlewareClient({ req, res });
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // Protected routes that require authentication
+  const protectedRoutes = ['/rooms', '/settings', '/memories', '/global'];
+  const isProtectedRoute = protectedRoutes.some(route => url.pathname.startsWith(route));
 
-  // Protect app routes
-  if (req.nextUrl.pathname.startsWith('/app') && !session) {
-    return NextResponse.redirect(new URL('/login', req.url));
+  // Public routes that don't need middleware auth check
+  const publicRoutes = ['/chatultra', '/login', '/privacy', '/terms', '/password-check'];
+  const isPublicRoute = publicRoutes.some(route => url.pathname.startsWith(route));
+
+  // Skip Supabase auth check for public routes to avoid errors
+  if (isPublicRoute) {
+    return res;
   }
 
-  // Redirect authenticated users away from auth pages
-  if (req.nextUrl.pathname.startsWith('/login') && session) {
-    return NextResponse.redirect(new URL('/app', req.url));
+  // Only create Supabase client if we need to check auth
+  if (isProtectedRoute) {
+    try {
+      const supabase = createMiddlewareClient({ req, res });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      // Redirect to login if not authenticated
+      if (!session) {
+        return NextResponse.redirect(new URL('/login', req.url));
+      }
+    } catch (error) {
+      // If Supabase client creation fails, allow through (will fail at route level if needed)
+      console.error('Middleware Supabase error:', error);
+    }
   }
 
   return res;
