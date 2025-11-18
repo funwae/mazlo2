@@ -3,8 +3,8 @@ const path = require('path');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Remove 'standalone' output for Vercel deployment
-  // output: 'standalone',
+  // Configure for monorepo structure
+  outputFileTracingRoot: path.join(__dirname, '../../'),
   eslint: {
     // Warning: This allows production builds to successfully complete even if
     // your project has ESLint errors. We'll fix these properly later.
