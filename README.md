@@ -26,12 +26,23 @@ A project-centric AI workspace featuring Mazlo, an AI operator that helps you ma
 ## Quick Start
 
 1. Clone the repository
+
 2. Install dependencies:
 ```bash
-npm install
+cd apps/chat-ultra
+npm install --legacy-peer-deps
 ```
 
-3. Set up environment variables (see `.env.example`)
+3. Set up environment variables:
+```bash
+# Copy the example .env file
+cp .env.example .env.local
+
+# Edit .env.local and add your Supabase and Z.AI credentials
+# For development: Keep DEV_BYPASS_AUTH=true to skip authentication
+```
+
+**Development Mode**: With `DEV_BYPASS_AUTH=true` in your `.env.local`, the app automatically uses a demo user (no login required). This lets you focus on building and testing without dealing with authentication.
 
 4. Run database migrations:
 ```bash
@@ -42,6 +53,10 @@ npm run db:migrate
 ```bash
 npm run dev
 ```
+
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+**Note**: In production, set `DEV_BYPASS_AUTH=false` in your Vercel environment variables to enable real authentication.
 
 ## Project Structure
 
